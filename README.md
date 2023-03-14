@@ -1,6 +1,6 @@
 ## Weather Web App
 
-A simple weather web app using python flaks and mysql, and constructed with the help of this following tutorial: [click me](https://www.youtube.com/watch?v=lWA0GgUN8kg).
+A simple weather web app using python, flask and mysql; constructed with the help of this following tutorial: [click me](https://www.youtube.com/watch?v=lWA0GgUN8kg).
 
 ## Installation and Setup Instructions
 
