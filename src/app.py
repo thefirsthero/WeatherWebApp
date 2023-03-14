@@ -38,8 +38,6 @@ def get_cities():
         cur.execute(query)
 
         myresult = cur.fetchall()
-        dic = { t for t in myresult}
-        print(dic)
 
     except mysql.connector.DatabaseError:
         myconn.rollback()
@@ -100,54 +98,60 @@ def del_city(city):
 
     myconn.close()
 
-# Index Page (Get Request)
-@app.route('/')
-def index_get():
-    cities = get_cities()
+# Index Page
+@app.route('/', methods=['GET','POST'])
+def index():
+    # if POST request
+    if request.method == 'POST':
+        try:
+            err_msg = ''
+            new_city = request.form.get('city')
+            new_city = new_city.lower()
+            new_city = string.capwords(new_city)
+            if new_city:
+                existing_city = city_exists(new_city)
+                
+                if not existing_city:
+                    new_city_data = get_weather_data(new_city)
+                    if new_city_data['cod'] == 200:
+                        insert_city(new_city)
+                    else:
+                        err_msg = 'That is not a valid city!'
+                else:
+                    err_msg = 'City already exists in the database!'
 
-    weather_data = []
-
-    for city in cities:
-        city = city[0]
-        r = get_weather_data(city)
-        weather = {
-            'city' : city,
-            'temperature' : r['main']['temp'],
-            'description' : r['weather'][0]['description'],
-            'icon' : r['weather'][0]['icon'],
-        }
-        weather_data.append(weather)
-
-    logger.warning('Succesfully loaded weather data!')
-    return render_template('weather.html', weather_data=weather_data)
-
-# Index Page (Post Request)
-@app.route('/', methods=['POST'])
-def index_post():
-    err_msg = ''
-    new_city = request.form.get('city')
-    new_city = new_city.lower()
-    new_city = string.capwords(new_city)
-    if new_city:
-        existing_city = city_exists(new_city)
-        
-        if not existing_city:
-            new_city_data = get_weather_data(new_city)
-            if new_city_data['cod'] == 200:
-                insert_city(new_city)
+            if err_msg:
+                logger.warning(err_msg)
+                flash(err_msg, 'error')
             else:
-                err_msg = 'That is not a valid city!'
-        else:
-            err_msg = 'City already exists in the database!'
+                logger.warning('City added successfully!')
+                flash('City added successfully!', 'success')
 
-    if err_msg:
-        logger.warning(err_msg)
-        flash(err_msg, 'error')
+            return redirect(url_for('index'))
+        except:
+            logger.critical('A critical error has occured')
+    # if GET request
     else:
-        logger.warning('City added successfully!')
-        flash('City added successfully!', 'success')
+        try:
+            cities = get_cities()
 
-    return redirect(url_for('index_get'))
+            weather_data = []
+
+            for city in cities:
+                city = city[0]
+                r = get_weather_data(city)
+                weather = {
+                    'city' : city,
+                    'temperature' : r['main']['temp'],
+                    'description' : r['weather'][0]['description'],
+                    'icon' : r['weather'][0]['icon'],
+                }
+                weather_data.append(weather)
+
+            logger.warning('Succesfully loaded weather data!')
+            return render_template('weather.html', weather_data=weather_data)
+        except:
+            logger.critical('A critical error has occured')
 
 # Deleting a City Route
 @app.route('/delete/<name>')
@@ -155,7 +159,7 @@ def delete_city( name ):
     del_city(name)
     logger.warning(f'Successfully deleted { name }!')
     flash(f'Successfully deleted { name }!', 'success')
-    return redirect(url_for('index_get'))
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

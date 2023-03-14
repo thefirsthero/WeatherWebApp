@@ -17,6 +17,9 @@ Filling in the required information with your mysql details.
 ## Database Setup
 Run the `create_dbs.py` script to create the database in mysql.
 
+## Create Log Folder
+Create a foler called `log` in the application root directory
+
 ## Running Web App:
 Run `python app.py` and the web app will be run in your localhost.
 
