@@ -25,3 +25,6 @@ Run `python app.py` and the web app will be run in your localhost.
 
 ## Viewing Logs
 Logs can be viewed at `log/record.log`
+
+## Documentation
+The documentation can be viewed in its respective folder: [click me](https://github.com/vukosimoyane/WeatherWebApp/tree/master/documentation)
