@@ -105,38 +105,47 @@ def index():
     if request.method == 'POST':
         try:
             err_msg = ''
+            # get city from from
             new_city = request.form.get('city')
             new_city = new_city.lower()
             new_city = string.capwords(new_city)
+            # check if the city already exists
             if new_city:
                 existing_city = city_exists(new_city)
-                
+                # if it doesn't already exist...
                 if not existing_city:
                     new_city_data = get_weather_data(new_city)
+                    # checking if the city is valid
                     if new_city_data['cod'] == 200:
+                        # insert into db if it passes both checks
                         insert_city(new_city)
+                    # if not valid return relvant error message
                     else:
                         err_msg = 'That is not a valid city!'
+                # if it already exists return relevant error message
                 else:
                     err_msg = 'City already exists in the database!'
-
+            # log and flash the error message if there is one
             if err_msg:
                 logger.warning(err_msg)
                 flash(err_msg, 'error')
+            # otherwise log and flash a success message
             else:
                 logger.warning('City added successfully!')
                 flash('City added successfully!', 'success')
-
+            # redirect to the same index page; effectively a refresh
             return redirect(url_for('index'))
         except:
             logger.critical('A critical error has occured')
     # if GET request
     else:
         try:
+            # fetch all cities from the db
             cities = get_cities()
 
             weather_data = []
 
+            # for every city fetched - get its weather data from the api, create a dictionary of the relevant data and store it in a list of all cities  relevant weather data
             for city in cities:
                 city = city[0]
                 r = get_weather_data(city)
@@ -148,7 +157,9 @@ def index():
                 }
                 weather_data.append(weather)
 
+            # log a succesful retreival of the weather data
             logger.warning('Succesfully loaded weather data!')
+            # render the weather template, passing the data needed to display the weather for each city
             return render_template('weather.html', weather_data=weather_data)
         except:
             logger.critical('A critical error has occured')
@@ -156,9 +167,12 @@ def index():
 # Deleting a City Route
 @app.route('/delete/<name>')
 def delete_city( name ):
+    # deletes a city form the db
     del_city(name)
+    # logs and flashes a succesful deletion
     logger.warning(f'Successfully deleted { name }!')
     flash(f'Successfully deleted { name }!', 'success')
+    # effectively refreshes
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
