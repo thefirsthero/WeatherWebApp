@@ -43,8 +43,9 @@ def get_cities():
         myconn.rollback()
 
     myconn.close()
-
-    return myresult
+    # neatening the returned list
+    gc = [var[0] for var in myresult]
+    return gc
 
 def city_exists(city):
     '''This is a boolean function to check if a city already exists in the db'''
@@ -147,7 +148,6 @@ def index():
 
             # for every city fetched - get its weather data from the api, create a dictionary of the relevant data and store it in a list of all cities  relevant weather data
             for city in cities:
-                city = city[0]
                 r = get_weather_data(city)
                 weather = {
                     'city' : city,
